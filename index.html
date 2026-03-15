@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LagSwitch — Download</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --pink:       #ff2d78;
+    --pink-light: #ff6ea8;
+    --pink-glow:  #ff2d7855;
+    --black:      #080810;
+    --black2:     #0f0f1a;
+    --black3:     #161624;
+    --border:     #2a0f1e;
+    --text:       #f0d6e8;
+    --muted:      #7a5068;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: crosshair;
+  }
+
+  /* ── GRID BACKGROUND ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,45,120,.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,45,120,.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── SCANLINES ── */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,.15) 2px,
+      rgba(0,0,0,.15) 4px
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* ── NOISE OVERLAY ── */
+  .noise {
+    position: fixed;
+    inset: 0;
+    opacity: .03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  /* ── WRAPPER ── */
+  .wrap { position: relative; z-index: 10; max-width: 900px; margin: 0 auto; padding: 0 24px; }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(8,8,16,.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 24px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', monospace;
+    font-weight: 900;
+    font-size: 1rem;
+    color: var(--pink);
+    text-shadow: 0 0 16px var(--pink-glow);
+    letter-spacing: .15em;
+    text-decoration: none;
+  }
+  .nav-links { display: flex; gap: 24px; }
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: .75rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    transition: color .2s;
+  }
+  .nav-links a:hover { color: var(--pink-light); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 92vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 80px 0 60px;
+    position: relative;
+  }
+
+  /* Pink radial glow behind hero */
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 700px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(255,45,120,.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--pink);
+    color: var(--pink-light);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 2px;
+    margin-bottom: 32px;
+    animation: fadeUp .6s ease both;
+    box-shadow: 0 0 14px var(--pink-glow);
+  }
+  .hero-badge span { display: inline-block; width: 6px; height: 6px; background: var(--pink); border-radius: 50%; animation: blink 1.2s step-start infinite; }
+
+  .hero-title {
+    font-family: 'Orbitron', monospace;
+    font-weight: 900;
+    font-size: clamp(2.8rem, 8vw, 5.5rem);
+    line-height: 1;
+    letter-spacing: -.02em;
+    color: #fff;
+    animation: fadeUp .7s .1s ease both;
+  }
+  .hero-title em {
+    font-style: normal;
+    color: var(--pink);
+    text-shadow: 0 0 40px var(--pink-glow), 0 0 80px var(--pink-glow);
+  }
+
+  .hero-sub {
+    margin-top: 20px;
+    color: var(--muted);
+    font-size: .9rem;
+    line-height: 1.7;
+    max-width: 520px;
+    animation: fadeUp .7s .2s ease both;
+  }
+
+  .hero-actions {
+    margin-top: 44px;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: fadeUp .7s .3s ease both;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--pink);
+    color: #fff;
+    font-family: 'Orbitron', monospace;
+    font-size: .8rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    padding: 14px 32px;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+    transition: transform .15s, box-shadow .15s;
+    box-shadow: 0 0 30px var(--pink-glow), inset 0 1px 0 rgba(255,255,255,.2);
+  }
+  .btn-primary::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -60%;
+    width: 60%;
+    height: 200%;
+    background: rgba(255,255,255,.15);
+    transform: skewX(-20deg);
+    transition: left .4s ease;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 50px var(--pink-glow), inset 0 1px 0 rgba(255,255,255,.2); }
+  .btn-primary:hover::after { left: 130%; }
+  .btn-primary:active { transform: scale(.97); }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: transparent;
+    color: var(--pink-light);
+    font-family: 'Orbitron', monospace;
+    font-size: .8rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    padding: 14px 28px;
+    border: 1px solid var(--pink);
+    border-radius: 2px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background .2s, transform .15s;
+  }
+  .btn-ghost:hover { background: rgba(255,45,120,.12); transform: translateY(-2px); }
+
+  .hero-stats {
+    margin-top: 64px;
+    display: flex;
+    gap: 48px;
+    justify-content: center;
+    flex-wrap: wrap;
+    animation: fadeUp .7s .45s ease both;
+  }
+  .stat { text-align: center; }
+  .stat-num {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--pink);
+    text-shadow: 0 0 20px var(--pink-glow);
+  }
+  .stat-lbl { font-size: .65rem; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--pink), transparent);
+    opacity: .4;
+    margin: 0 0 80px;
+  }
+
+  /* ── FEATURES ── */
+  .section-label {
+    font-size: .65rem;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--pink);
+    margin-bottom: 12px;
+  }
+  .section-title {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(1.4rem, 4vw, 2rem);
+    font-weight: 900;
+    color: #fff;
+    margin-bottom: 48px;
+  }
+  .section-title span { color: var(--pink); }
+
+  .features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 2px;
+    margin-bottom: 100px;
+  }
+  .feat {
+    background: var(--black2);
+    border: 1px solid var(--border);
+    padding: 28px 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color .2s, transform .2s;
+  }
+  .feat::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--pink);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform .3s ease;
+  }
+  .feat:hover { border-color: var(--pink); transform: translateY(-3px); }
+  .feat:hover::before { transform: scaleX(1); }
+  .feat-icon {
+    font-size: 1.6rem;
+    margin-bottom: 14px;
+    filter: drop-shadow(0 0 8px var(--pink-glow));
+  }
+  .feat-title {
+    font-family: 'Orbitron', monospace;
+    font-size: .8rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: .08em;
+    margin-bottom: 8px;
+  }
+  .feat-desc { font-size: .75rem; color: var(--muted); line-height: 1.6; }
+
+  /* ── DOWNLOAD CARD ── */
+  .download-section { margin-bottom: 100px; }
+  .dl-card {
+    background: var(--black2);
+    border: 1px solid var(--pink);
+    border-radius: 2px;
+    padding: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    flex-wrap: wrap;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 0 60px rgba(255,45,120,.08);
+  }
+  .dl-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at top right, rgba(255,45,120,.1), transparent 60%);
+    pointer-events: none;
+  }
+  .dl-info { flex: 1; min-width: 220px; }
+  .dl-name {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: #fff;
+    margin-bottom: 6px;
+  }
+  .dl-meta { font-size: .7rem; color: var(--muted); margin-bottom: 16px; letter-spacing: .08em; }
+  .dl-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tag {
+    background: rgba(255,45,120,.12);
+    border: 1px solid rgba(255,45,120,.3);
+    color: var(--pink-light);
+    font-size: .62rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 2px;
+  }
+
+  /* ── SETUP STEPS ── */
+  .setup-section { margin-bottom: 100px; }
+  .steps { display: flex; flex-direction: column; gap: 2px; }
+  .step {
+    background: var(--black2);
+    border: 1px solid var(--border);
+    padding: 24px 28px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    transition: border-color .2s;
+  }
+  .step:hover { border-color: rgba(255,45,120,.4); }
+  .step-num {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: var(--pink);
+    text-shadow: 0 0 20px var(--pink-glow);
+    min-width: 36px;
+    line-height: 1;
+  }
+  .step-body { flex: 1; }
+  .step-title {
+    font-family: 'Orbitron', monospace;
+    font-size: .82rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 6px;
+    letter-spacing: .06em;
+  }
+  .step-desc { font-size: .75rem; color: var(--muted); line-height: 1.7; }
+  .code {
+    display: inline-block;
+    background: var(--black3);
+    border: 1px solid var(--border);
+    color: var(--pink-light);
+    font-family: 'DM Mono', monospace;
+    font-size: .72rem;
+    padding: 2px 8px;
+    border-radius: 2px;
+    margin: 2px 0;
+  }
+  .code-block {
+    background: var(--black3);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--pink);
+    color: var(--pink-light);
+    font-family: 'DM Mono', monospace;
+    font-size: .72rem;
+    padding: 14px 18px;
+    margin-top: 10px;
+    border-radius: 0 2px 2px 0;
+    white-space: pre;
+    overflow-x: auto;
+    line-height: 1.7;
+  }
+
+  /* ── WARNING BOX ── */
+  .warning {
+    background: rgba(255,45,120,.06);
+    border: 1px solid rgba(255,45,120,.3);
+    border-left: 3px solid var(--pink);
+    padding: 16px 20px;
+    border-radius: 0 2px 2px 0;
+    font-size: .75rem;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-top: 12px;
+  }
+  .warning strong { color: var(--pink-light); }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 24px;
+    text-align: center;
+    position: relative;
+    z-index: 10;
+  }
+  footer p { font-size: .7rem; color: var(--muted); letter-spacing: .08em; }
+  footer a { color: var(--pink-light); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+  }
+  @keyframes flicker {
+    0%,19%,21%,23%,25%,54%,56%,100% { opacity: 1; }
+    20%,22%,24%,55% { opacity: .4; }
+  }
+
+  /* scroll-reveal helper */
+  .reveal { opacity: 0; transform: translateY(30px); transition: opacity .6s ease, transform .6s ease; }
+  .reveal.visible { opacity: 1; transform: none; }
+</style>
+</head>
+<body>
+<div class="noise"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">LAG/SW</a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#download">Download</a>
+      <a href="#setup">Setup</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-badge"><span></span> Free &amp; Open Source</div>
+    <h1 class="hero-title">LAG<em>SWITCH</em></h1>
+    <p class="hero-sub">
+      Take full control of your network. Throttle, spike, and simulate packet loss
+      on demand — built for testing, built for gamers.
+    </p>
+    <div class="hero-actions">
+      <a href="#download" class="btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download Now
+      </a>
+      <a href="https://github.com/YOUR_USERNAME/lagswitch" target="_blank" class="btn-ghost">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        View on GitHub
+      </a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><div class="stat-num">v2.1</div><div class="stat-lbl">Latest</div></div>
+      <div class="stat"><div class="stat-num">WIN</div><div class="stat-lbl">Platform</div></div>
+      <div class="stat"><div class="stat-num">FREE</div><div class="stat-lbl">License</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="wrap">
+    <div class="divider"></div>
+    <div class="reveal">
+      <p class="section-label">// capabilities</p>
+      <h2 class="section-title">What it <span>does</span></h2>
+    </div>
+    <div class="features reveal">
+      <div class="feat">
+        <div class="feat-icon">⚡</div>
+        <div class="feat-title">Instant Toggle</div>
+        <div class="feat-desc">One click to spike your latency. Bind it to a hotkey for split-second control mid-game.</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">🎛️</div>
+        <div class="feat-title">Packet Loss Control</div>
+        <div class="feat-desc">Dial in exact packet drop percentages from 0–100% to simulate any network condition.</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">📡</div>
+        <div class="feat-title">Bandwidth Throttle</div>
+        <div class="feat-desc">Cap upload or download speeds on specific interfaces or globally across all adapters.</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">🔒</div>
+        <div class="feat-title">Process Targeting</div>
+        <div class="feat-desc">Apply lag only to selected executables — leave Discord and your browser untouched.</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">📊</div>
+        <div class="feat-title">Live Stats</div>
+        <div class="feat-desc">Real-time ping graph and packet counter so you always know what's happening.</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">🎮</div>
+        <div class="feat-title">Hotkey Support</div>
+        <div class="feat-desc">Assign global hotkeys to toggle, cycle presets, or emergency-reset while in fullscreen.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DOWNLOAD -->
+<section id="download">
+  <div class="wrap">
+    <div class="reveal">
+      <p class="section-label">// release</p>
+      <h2 class="section-title">Get the <span>latest</span></h2>
+    </div>
+    <div class="download-section reveal">
+      <div class="dl-card">
+        <div class="dl-info">
+          <div class="dl-name">LagSwitch.exe</div>
+          <div class="dl-meta">Version 2.1.0 &nbsp;·&nbsp; Windows 10/11 &nbsp;·&nbsp; 64-bit</div>
+          <div class="dl-tags">
+            <span class="tag">Portable</span>
+            <span class="tag">No Install</span>
+            <span class="tag">Open Source</span>
+            <span class="tag">Free</span>
+          </div>
+        </div>
+        <a href="https://github.com/YOUR_USERNAME/lagswitch/releases/latest/download/LagSwitch.exe"
+           class="btn-primary" target="_blank">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download .exe
+        </a>
+      </div>
+      <div class="warning">
+        <strong>⚠ Note:</strong> Windows Defender or antivirus may flag this tool because it hooks into network drivers.
+        It is safe — add an exception or check the source code on GitHub to verify yourself.
+        Always download from this page or the official GitHub releases.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SETUP -->
+<section id="setup">
+  <div class="wrap">
+    <div class="reveal">
+      <p class="section-label">// getting started</p>
+      <h2 class="section-title">Setup <span>guide</span></h2>
+    </div>
+    <div class="setup-section reveal">
+      <div class="steps">
+
+        <div class="step">
+          <div class="step-num">01</div>
+          <div class="step-body">
+            <div class="step-title">Download the .exe</div>
+            <div class="step-desc">
+              Click the download button above. The file is portable — no installer needed.
+              Save it anywhere you like, e.g. your Desktop.
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">02</div>
+          <div class="step-body">
+            <div class="step-title">Run as Administrator</div>
+            <div class="step-desc">
+              Right-click <span class="code">LagSwitch.exe</span> → <strong>Run as administrator</strong>.
+              This is required so the app can interact with your network adapter drivers.
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">03</div>
+          <div class="step-body">
+            <div class="step-title">Select Your Network Adapter</div>
+            <div class="step-desc">
+              In the dropdown at the top, pick the adapter your game uses.
+              Usually it's your Ethernet or Wi-Fi adapter — check Task Manager → Performance tab if unsure.
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">04</div>
+          <div class="step-body">
+            <div class="step-title">Configure Your Settings</div>
+            <div class="step-desc">
+              Set your desired lag spike amount (ms), packet loss (%), and optional bandwidth cap.
+              You can save these as presets for quick switching.
+              <div class="code-block">Spike Delay  : 200–2000ms  (recommend 500ms to start)
+Packet Loss  : 0–100%     (10–30% for subtle effect)
+Bandwidth Cap: optional   (leave blank for no cap)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">05</div>
+          <div class="step-body">
+            <div class="step-title">Assign a Hotkey (Optional)</div>
+            <div class="step-desc">
+              Go to <span class="code">Settings → Hotkeys</span> and bind a key combo like
+              <span class="code">F8</span> or <span class="code">Ctrl+L</span> to toggle the lag on/off
+              without alt-tabbing out of your game.
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">06</div>
+          <div class="step-body">
+            <div class="step-title">Hit the Big Pink Button</div>
+            <div class="step-desc">
+              Press <span class="code">ACTIVATE</span> to start the lag switch.
+              The button turns red and the status bar shows <span class="code">ACTIVE</span>.
+              Press again (or your hotkey) to instantly restore normal network.
+              <div class="warning"><strong>Emergency reset:</strong> if the app freezes while active, open CMD and run:<br/>
+                <div class="code-block">netsh winsock reset
+netsh int ip reset</div>
+              Then restart your PC. Your connection will be fully restored.
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>
+    LagSwitch is open source —
+    <a href="https://github.com/YOUR_USERNAME/lagswitch" target="_blank">view source on GitHub</a>
+    &nbsp;·&nbsp; Use responsibly &nbsp;·&nbsp; Not affiliated with any game or platform.
+  </p>
+</footer>
+
+<script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 80);
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(r => obs.observe(r));
+
+  // Cursor glow trail
+  const canvas = document.createElement('canvas');
+  canvas.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:999;';
+  document.body.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+  let W, H, mouse = {x:0,y:0}, trail = [];
+
+  function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+  document.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+
+  function drawTrail() {
+    ctx.clearRect(0, 0, W, H);
+    trail.push({x: mouse.x, y: mouse.y, t: Date.now()});
+    trail = trail.filter(p => Date.now() - p.t < 500);
+    trail.forEach((p, i) => {
+      const age = (Date.now() - p.t) / 500;
+      const alpha = (1 - age) * 0.4;
+      const r = (1 - age) * 6;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,45,120,${alpha})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(drawTrail);
+  }
+  drawTrail();
+</script>
+</body>
+</html>
