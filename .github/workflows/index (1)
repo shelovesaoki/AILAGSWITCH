@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZURO.lag — R6</title>
+<style>
+  :root{
+    --void:       #08080c;
+    --panel:      #0f0f16;
+    --panel-2:    #14141d;
+    --line:       #241019;
+    --line-soft:  #1a1420;
+    --pink:       #ff2f6e;
+    --pink-dim:   #ff2f6e26;
+    --pink-glow:  #ff2f6e55;
+    --text:       #e7e6ee;
+    --text-dim:   #7a7788;
+    --text-faint: #4c495a;
+    --mono: "IBM Plex Mono","SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+
+  html{ background:var(--void); }
+
+  body{
+    background:
+      radial-gradient(ellipse 900px 500px at 15% -10%, #1a0812 0%, transparent 60%),
+      radial-gradient(ellipse 700px 500px at 100% 20%, #12060e 0%, transparent 55%),
+      var(--void);
+    color:var(--text);
+    font-family:var(--mono);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+
+  /* faint scanline texture */
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background:repeating-linear-gradient(
+      to bottom, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px,
+      transparent 1px, transparent 3px
+    );
+    pointer-events:none;
+    z-index:1;
+  }
+
+  a{ color:inherit; text-decoration:none; }
+
+  .eyebrow{
+    font-size:11px;
+    letter-spacing:.16em;
+    color:var(--pink);
+    text-transform:uppercase;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:10px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:6px; height:6px;
+    background:var(--pink);
+    box-shadow:0 0 8px var(--pink-glow);
+  }
+
+  /* ---------- top chrome bar ---------- */
+  .chrome{
+    max-width:920px;
+    margin:36px auto 0;
+    padding:0 24px;
+  }
+  .chrome-bar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    border:1px solid var(--line);
+    border-bottom:2px solid var(--pink);
+    background:var(--panel);
+    padding:14px 20px;
+  }
+  .chrome-left{ display:flex; align-items:baseline; gap:10px; }
+  .chrome-left .z{
+    color:var(--pink);
+    font-weight:700;
+    letter-spacing:.06em;
+    font-size:15px;
+  }
+  .chrome-left .r6{
+    color:var(--text-dim);
+    font-size:13px;
+  }
+  .chrome-right{ display:flex; align-items:center; gap:14px; font-size:12px; color:var(--text-faint); }
+  .status-pill{
+    border:1px solid var(--line);
+    background:var(--panel-2);
+    color:var(--text-dim);
+    padding:3px 12px;
+    letter-spacing:.08em;
+    font-size:11px;
+  }
+
+  /* ---------- hero ---------- */
+  .hero{
+    max-width:920px;
+    margin:0 auto;
+    padding:70px 24px 40px;
+    position:relative;
+    z-index:2;
+  }
+  .hero h1{
+    font-size:clamp(30px,5vw,46px);
+    font-weight:700;
+    letter-spacing:-0.01em;
+    color:var(--text);
+    margin-bottom:14px;
+  }
+  .hero h1 .accent{ color:var(--pink); text-shadow:0 0 22px var(--pink-glow); }
+  .hero p{
+    max-width:520px;
+    color:var(--text-dim);
+    font-size:14.5px;
+    margin-bottom:32px;
+  }
+  .hero-ctas{ display:flex; gap:14px; flex-wrap:wrap; align-items:center; }
+
+  .btn-primary{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    background:linear-gradient(180deg, #2a0a16, #1c0710);
+    border:1px solid var(--pink);
+    color:var(--pink);
+    padding:14px 26px;
+    font-family:var(--mono);
+    font-size:13px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:all .15s ease;
+    box-shadow:0 0 0px var(--pink-glow);
+  }
+  .btn-primary:hover{
+    background:var(--pink);
+    color:#0a0510;
+    box-shadow:0 0 26px var(--pink-glow);
+  }
+  .btn-secondary{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    border:1px solid var(--line);
+    color:var(--text-dim);
+    padding:14px 20px;
+    font-size:12.5px;
+    letter-spacing:.06em;
+    transition:all .15s ease;
+  }
+  .btn-secondary:hover{ border-color:var(--text-dim); color:var(--text); }
+
+  .meta-row{
+    margin-top:22px;
+    display:flex;
+    gap:22px;
+    flex-wrap:wrap;
+    font-size:11.5px;
+    color:var(--text-faint);
+  }
+  .meta-row span b{ color:var(--text-dim); font-weight:500; }
+
+  /* ---------- app preview mock ---------- */
+  .preview{
+    max-width:920px;
+    margin:10px auto 90px;
+    padding:0 24px;
+    position:relative;
+    z-index:2;
+  }
+  .app-window{
+    border:1px solid var(--line);
+    background:var(--panel);
+    box-shadow:0 40px 90px -30px rgba(0,0,0,0.7);
+  }
+  .app-titlebar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:12px 18px;
+    border-bottom:2px solid var(--pink);
+  }
+  .app-titlebar .title{ color:var(--pink); font-weight:700; font-size:13px; letter-spacing:.04em; }
+  .app-titlebar .title span{ color:var(--text-dim); font-weight:400; }
+  .app-titlebar .win-right{ display:flex; align-items:center; gap:12px; font-size:11px; color:var(--text-faint); }
+  .idle-pill{ border:1px solid var(--line); padding:2px 10px; color:var(--text-dim); letter-spacing:.08em; }
+  .app-tabs{
+    display:flex;
+    border-bottom:1px solid var(--line);
+    font-size:11.5px;
+  }
+  .app-tabs div{
+    padding:10px 20px;
+    color:var(--text-faint);
+    letter-spacing:.04em;
+  }
+  .app-tabs div.active{
+    color:var(--pink);
+    border-bottom:2px solid var(--pink);
+    margin-bottom:-1px;
+  }
+  .app-body{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:0;
+  }
+  .app-col{ padding:20px 22px; border-right:1px solid var(--line-soft); }
+  .app-col:last-child{ border-right:none; }
+  .panel-label{
+    font-size:10.5px;
+    letter-spacing:.14em;
+    color:var(--pink);
+    margin-bottom:14px;
+  }
+  .field-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:12px;
+    color:var(--text-dim);
+    margin-bottom:12px;
+    gap:10px;
+  }
+  .field-row .val{
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    color:var(--text-faint);
+    padding:5px 10px;
+    min-width:120px;
+    text-align:left;
+    font-size:11.5px;
+  }
+  .check-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:12px;
+    color:var(--text-dim);
+    margin-bottom:10px;
+  }
+  .check-row .box{
+    width:14px; height:14px;
+    border:1px solid var(--pink);
+    background:var(--pink-dim);
+    color:var(--pink);
+    display:flex; align-items:center; justify-content:center;
+    font-size:10px;
+  }
+  .app-footer-cta{
+    grid-column:1 / -1;
+    border-top:1px solid var(--line);
+    padding:16px 22px;
+  }
+  .activate-bar{
+    border:1px solid var(--pink);
+    background:var(--pink-dim);
+    color:var(--pink);
+    text-align:center;
+    padding:12px;
+    font-size:12px;
+    letter-spacing:.16em;
+  }
+
+  /* ---------- sections ---------- */
+  .section{
+    max-width:920px;
+    margin:0 auto;
+    padding:20px 24px 80px;
+    position:relative;
+    z-index:2;
+  }
+  .section h2{
+    font-size:20px;
+    color:var(--text);
+    margin-bottom:6px;
+  }
+  .section .sub{ color:var(--text-dim); font-size:13px; margin-bottom:34px; max-width:520px; }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+  }
+  .card{
+    background:var(--panel);
+    padding:22px 20px;
+  }
+  .card .tag{
+    font-size:10px;
+    letter-spacing:.14em;
+    color:var(--pink);
+    margin-bottom:12px;
+  }
+  .card h3{ font-size:14px; color:var(--text); margin-bottom:8px; font-weight:600; }
+  .card p{ font-size:12.5px; color:var(--text-dim); }
+
+  /* ---------- download panel ---------- */
+  .download-panel{
+    border:1px solid var(--line);
+    background:var(--panel);
+    padding:36px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:30px;
+    flex-wrap:wrap;
+  }
+  .download-panel .left h3{ font-size:17px; color:var(--text); margin-bottom:8px; }
+  .download-panel .left p{ font-size:12.5px; color:var(--text-dim); max-width:420px; }
+  .dl-specs{
+    display:flex;
+    gap:26px;
+    margin-top:16px;
+    flex-wrap:wrap;
+  }
+  .dl-specs div{ font-size:11px; color:var(--text-faint); }
+  .dl-specs div b{ display:block; color:var(--text-dim); font-size:12.5px; margin-bottom:2px; }
+
+  /* ---------- footer ---------- */
+  footer{
+    border-top:1px solid var(--line);
+    padding:24px;
+  }
+  .footer-inner{
+    max-width:920px;
+    margin:0 auto;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:11.5px;
+    color:var(--text-faint);
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  .footer-inner b{ color:var(--text-dim); font-weight:500; }
+  .footer-links{ display:flex; gap:18px; }
+  .footer-links a{ color:var(--text-faint); transition:color .15s; }
+  .footer-links a:hover{ color:var(--pink); }
+
+  @media (max-width:720px){
+    .app-body{ grid-template-columns:1fr; }
+    .app-col{ border-right:none; border-bottom:1px solid var(--line-soft); }
+    .grid{ grid-template-columns:1fr; }
+    .download-panel{ flex-direction:column; align-items:flex-start; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="chrome">
+    <div class="chrome-bar">
+      <div class="chrome-left">
+        <span class="z">ZURO</span><span class="r6">.lag -R6</span>
+      </div>
+      <div class="chrome-right">
+        <span class="status-pill">IDLE</span>
+        <span>C++ / Windows</span>
+      </div>
+    </div>
+  </div>
+
+  <section class="hero">
+    <div class="eyebrow">Release R6</div>
+    <h1>Take control of your <span class="accent">connection</span>,<br>on your terms.</h1>
+    <p>ZURO.lag is a lightweight network-control utility with keybind activation,
+       configurable duration windows, and a live status HUD. Built in C++, no bloat.</p>
+
+    <div class="hero-ctas">
+      <a class="btn-primary" href="#download">↓ Download latest — R6</a>
+      <a class="btn-secondary" href="https://github.com/" target="_blank" rel="noopener">View source on GitHub</a>
+    </div>
+
+    <div class="meta-row">
+      <span><b>Version</b> R6</span>
+      <span><b>Platform</b> Windows 10/11</span>
+      <span><b>Language</b> C++</span>
+      <span><b>License</b> Open source</span>
+    </div>
+  </section>
+
+  <div class="preview">
+    <div class="app-window">
+      <div class="app-titlebar">
+        <div class="title">ZURO <span>.lag -R6</span></div>
+        <div class="win-right">
+          <span>0.0s</span>
+          <span class="idle-pill">IDLE</span>
+        </div>
+      </div>
+      <div class="app-tabs">
+        <div class="active">Main</div>
+        <div>Network</div>
+        <div>Logs</div>
+        <div>Settings</div>
+      </div>
+      <div class="app-body">
+        <div class="app-col">
+          <div class="panel-label">ACTIVATION</div>
+          <div class="field-row"><span>Keyboard Key</span><span class="val">&nbsp;</span></div>
+          <div class="field-row"><span>Mouse Button</span><span class="val">XBUTTON1</span></div>
+          <div class="panel-label" style="margin-top:22px;">CONTROL</div>
+          <div class="field-row"><span>Lag Mode</span><span class="val">Lag Switch</span></div>
+          <div class="check-row"><span class="box">✓</span> Hold Key Mode</div>
+          <div class="check-row"><span class="box">✓</span> Sounds</div>
+        </div>
+        <div class="app-col">
+          <div class="panel-label">NETWORK</div>
+          <div class="field-row"><span>Traffic</span><span class="val">Outgoing</span></div>
+          <div class="field-row"><span>Duration (ms)</span><span class="val">2000</span></div>
+          <div class="field-row"><span>Delay After (ms)</span><span class="val">100</span></div>
+        </div>
+        <div class="app-footer-cta">
+          <div class="activate-bar">ACTIVATE</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="eyebrow">Feature set</div>
+    <h2>Everything configurable, nothing hidden.</h2>
+    <p class="sub">Every panel in the app maps directly to a setting you can script, save, or bind to a key.</p>
+
+    <div class="grid">
+      <div class="card">
+        <div class="tag">01 — BIND</div>
+        <h3>Keyboard &amp; mouse capture</h3>
+        <p>Assign activation to any key or mouse button with a single click-to-capture flow.</p>
+      </div>
+      <div class="card">
+        <div class="tag">02 — MODE</div>
+        <h3>Hold or toggle</h3>
+        <p>Switch between hold-to-activate and toggle modes depending on how you work.</p>
+      </div>
+      <div class="card">
+        <div class="tag">03 — TRAFFIC</div>
+        <h3>Outgoing / incoming control</h3>
+        <p>Target outgoing or incoming traffic independently, with an optional TCP-only mode.</p>
+      </div>
+      <div class="card">
+        <div class="tag">04 — TIMING</div>
+        <h3>Duration &amp; delay windows</h3>
+        <p>Set precise millisecond windows for how long a control window runs and the delay after.</p>
+      </div>
+      <div class="card">
+        <div class="tag">05 — SAFETY</div>
+        <h3>Force stop</h3>
+        <p>One-click kill switch instantly restores normal connection behavior.</p>
+      </div>
+      <div class="card">
+        <div class="tag">06 — FEEDBACK</div>
+        <h3>Live status HUD</h3>
+        <p>Elapsed time, current state, and method are always visible in the title bar.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="download">
+    <div class="eyebrow">Get it</div>
+    <h2>Download ZURO.lag</h2>
+    <p class="sub">Grab the latest build straight from the GitHub release page.</p>
+
+    <div class="download-panel">
+      <div class="left">
+        <h3>zuro.lag-R6.zip</h3>
+        <p>Windows build, packaged with the compiled binary and default config.</p>
+        <div class="dl-specs">
+          <div><b>R6</b>Version</div>
+          <div><b>~2.4 MB</b>Size</div>
+          <div><b>Win10/11</b>Requires</div>
+          <div><b>C++</b>Built with</div>
+        </div>
+      </div>
+      <a class="btn-primary" href="https://github.com/YOUR-USERNAME/YOUR-REPO/releases/latest" target="_blank" rel="noopener">↓ Download R6</a>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-inner">
+      <div><b>zuro.lag -R6</b> · C++ &nbsp;|&nbsp; Administrator build</div>
+      <div class="footer-links">
+        <a href="https://github.com/" target="_blank" rel="noopener">GitHub</a>
+        <a href="#download">Releases</a>
+        <a href="https://github.com/YOUR-USERNAME/YOUR-REPO/issues" target="_blank" rel="noopener">Issues</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
